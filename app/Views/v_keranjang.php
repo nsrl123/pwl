@@ -1,1 +1,4 @@
-<a>ini halaman keranjang</a> 
+<?= $this-> extend('layout') ?>
+<?= $this-> section('content') ?>
+ini halaman keranjang
+<?= $this-> endSection ()?>
