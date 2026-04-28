@@ -14,3 +14,4 @@ $routes->get('logout', 'AuthController::logout');
 
 $routes->get('produk', 'ProdukController::index', ['filter' => 'auth']);
 $routes->get('keranjang', 'TraksaksiController::index', ['filter' => 'auth']);
+$routes->get('profil', 'Home::profilPengguna', ['filter' => 'auth']);
