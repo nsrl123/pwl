@@ -17,7 +17,16 @@ $routes->group('produk', ['filter' => 'auth'], function ($routes) {
     $routes->post('', 'ProdukController::create');
     $routes->post('edit/(:any)', 'ProdukController::edit/$1');
     $routes->get('delete/(:any)', 'ProdukController::delete/$1');
+    $routes->get('download', 'ProdukController::download');
 });
+
+$routes->group('keranjang', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'TraksaksiController::index');
+    $routes->post('', 'TraksaksiController::cart_add');
+    $routes->post('edit', 'TraksaksiController::cart_edit');
+    $routes->get('delete/(:any)', 'TraksaksiController::cart_delete/$1');
+    $routes->get('clear', 'TraksaksiController::cart_clear');
+}); 
 
 $routes->get('produk', 'ProdukController::index', ['filter' => 'auth']);
 $routes->get('keranjang', 'TraksaksiController::index', ['filter' => 'auth']);
