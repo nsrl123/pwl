@@ -5,17 +5,22 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 
+
 use App\Models\ProductModel;
 use Dompdf\Dompdf;
 
 class ProdukController extends BaseController
 {
    
+    protected $model;  
+    private $token;
+
     protected $productModel; 
     function __construct()
     {
         helper('form');
         $this->productModel = new ProductModel();
+        $this->token = env('MY_API_KEY');
     }
 
     public function index()
@@ -87,33 +92,34 @@ class ProdukController extends BaseController
         return redirect('produk')->with('success', 'Data Berhasil Dihapus');
     }
 
-    public function download(){
-    // Ambil data produk dari database
-    $products = $this->productModel->findAll();
+    public function download()
+    {
+        // Ambil data produk dari database
+        $products = $this->productModel->findAll();
 
-    // Render view menjadi HTML
-    $html = view('produk/download_pdf', [
-        'products' => $products
-    ]);
+        // Render view menjadi HTML
+        $html = view('produk/download_pdf', [
+            'products' => $products
+        ]);
 
-    // Nama file PDF
-    $filename = date('Y-m-d-H-i-s') . '-produk.pdf';
+        // Nama file PDF
+        $filename = date('Y-m-d-H-i-s') . '-produk.pdf';
 
-    // Inisialisasi Dompdf
-    $dompdf = new Dompdf();
+        // Inisialisasi Dompdf
+        $dompdf = new Dompdf();
 
-    // Load HTML ke Dompdf
-    $dompdf->loadHtml($html);
+        // Load HTML ke Dompdf
+        $dompdf->loadHtml($html);
 
-    // Setting ukuran kertas dan orientasi
-    $dompdf->setPaper('A4', 'portrait');
+        // Setting ukuran kertas dan orientasi
+        $dompdf->setPaper('A4', 'portrait');
 
-    // Generate PDF
-    $dompdf->render();
+        // Generate PDF
+        $dompdf->render();
 
-    // Download / tampilkan PDF
-    $dompdf->stream($filename, [
-        'Attachment' => true
-    ]);
+        // Download / tampilkan PDF
+        $dompdf->stream($filename, [
+            'Attachment' => true
+        ]);
     }
 }
