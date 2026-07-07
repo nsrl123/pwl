@@ -31,7 +31,7 @@ $routes->group('keranjang', ['filter' => 'auth'], function ($routes) {
 $routes->get('ajax/destinations', 'TraksaksiController::destinations', ['filter' => 'auth']);
 $routes->get('ajax/costs','TraksaksiController::costs', ['filter' => 'auth']);
 $routes->post('buy', 'TraksaksiController::buy', ['filter' => 'auth']);
-$routes->get('history', 'TransaksiController::history', ['filter' => 'auth']);
+$routes->get('history', 'TraksaksiController::history', ['filter' => 'auth']);
 
 $routes->get('checkout', 'TraksaksiController::checkout', ['filter' => 'auth']);
 $routes->get('produk', 'ProdukController::index', ['filter' => 'auth']);

@@ -79,6 +79,29 @@ class TraksaksiController extends BaseController
         return redirect()->to(base_url('keranjang'));
     }
 
+    public function cart_edit()
+    {
+        $items = $this->cart->contents();
+        $i = 1;
+
+        foreach ($items as $item) {
+            $qty = $this->request->getPost('qty' . $i);
+            if ($qty) {
+                $this->cart->update([
+                    'rowid' => $item['rowid'],
+                    'qty'   => $qty
+                ]);
+            }
+            $i++;
+        }
+
+        session()->setFlashdata(
+            'success',
+            'Keranjang berhasil diperbarui'
+        );
+
+        return redirect()->to(base_url('keranjang'));
+    }
 
     public function checkout()
     {  
@@ -151,6 +174,19 @@ class TraksaksiController extends BaseController
             return redirect()->back();
         }
 
+        // Validasi form
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'alamat'    => 'required|min_length[5]',
+            'kelurahan' => 'required',
+            'layanan'   => 'required',
+            'ongkir'    => 'required|numeric',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        }
+
         $db = \Config\Database::connect();
         $db->transStart(); 
 
@@ -160,13 +196,29 @@ class TraksaksiController extends BaseController
         }
 
         $ongkir = (int) $this->request->getPost('ongkir');
+        $voucher_code = $this->request->getPost('voucher_code');
+
+        // load helper perhitungan
+        helper('transaksi');
+
+        // hitung komponen tambahan
+        $diskon_voucher = hitung_diskon_voucher($subtotal, $voucher_code);
+        $subtotal_after_voucher = $subtotal - $diskon_voucher;
+        $ppn = hitung_ppn($subtotal_after_voucher);
+        $biaya_admin = hitung_biaya_admin($subtotal_after_voucher);
+
+        $grand_total = $subtotal_after_voucher + $ppn + $biaya_admin + $ongkir;
 
         $transaction = [
-            'username'    => $this->request->getPost('username'),
-            'alamat'      => $this->request->getPost('alamat'),
-            'ongkir'      => $ongkir,
-            'total_harga' => $subtotal + $ongkir,
-            'status'      => 0, 
+            'username'       => $this->request->getPost('username'),
+            'alamat'         => $this->request->getPost('alamat'),
+            'ongkir'         => $ongkir,
+            'total_harga'    => $grand_total,
+            'ppn'            => $ppn,
+            'biaya_admin'    => $biaya_admin,
+            'voucher_code'   => $voucher_code,
+            'diskon_voucher' => $diskon_voucher,
+            'status'         => 0, 
         ];
 
         // insert transaction
